@@ -1,0 +1,17 @@
+{
+  "Group": "Ascheladd",
+  "Name": "NeoLocks",
+  "Version": "1.0.0",
+  "Description": "A chest protection plugin that allows players to lock their chests with signs",
+  "Authors": [
+    {
+        "Name": "Ascheladd"
+    }
+  ],
+  "Website": "top-hytale-servers.com",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "me.ascheladd.hytale.neolocks.NeoLocks"
+}

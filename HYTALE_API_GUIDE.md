@@ -780,4 +780,595 @@ com.hypixel.hytale.component.ComponentRegistry
 # Entity/Block registries
 com.hypixel.hytale.server.core.modules.entity.EntityRegistry
 com.hypixel.hytale.server.core.universe.world.meta.BlockStateRegistry
+
+# UI System
+com.hypixel.hytale.server.core.entity.entities.player.pages.CustomUIPage
+com.hypixel.hytale.server.core.entity.entities.player.pages.PageManager
+com.hypixel.hytale.server.core.entity.entities.player.windows.Window
+com.hypixel.hytale.server.core.ui.builder.UICommandBuilder
 ```
+
+## Creating User Interfaces
+
+Hytale provides three main UI systems for different purposes:
+
+### 1. Custom Pages (Recommended for Custom UI)
+
+**What**: Full-screen custom UI pages that can display any content  
+**Use for**: Menus, dialogs, shops, quest interfaces, custom GUIs
+
+#### Creating a Custom Page
+
+```java
+package com.example.plugin.ui;
+
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.entity.entities.player.pages.CustomUIPage;
+import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
+import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
+
+public class MyCustomPage extends CustomUIPage {
+    
+    public MyCustomPage(PlayerRef playerRef) {
+        super(playerRef, CustomPageLifetime.PERSISTENT);
+        // Lifetime options:
+        // PERSISTENT - Stays open until explicitly closed
+        // TEMPORARY - Closes on certain actions
+    }
+    
+    /**
+     * Build the UI structure.
+     * This is where you define your UI elements.
+     */
+    @Override
+    public void build(
+        Ref<EntityStore> playerEntity,
+        UICommandBuilder ui,
+        UIEventBuilder events,
+        Store<EntityStore> store
+    ) {
+        // Clear existing UI
+        ui.clear("root");
+        
+        // Add a container
+        ui.append("root", "main-container");
+        
+        // Add text
+        ui.append("main-container", "title-text");
+        ui.set("title-text.text", "Welcome to My Plugin!");
+        
+        // Add a button
+        ui.append("main-container", "close-button");
+        ui.set("close-button.text", "Close");
+        ui.set("close-button.type", "button");
+        
+        // Register button click event
+        events.registerEvent("close-button", "click", "close-clicked");
+    }
+    
+    /**
+     * Handle UI events (button clicks, etc.)
+     */
+    @Override
+    public void handleDataEvent(
+        Ref<EntityStore> playerEntity,
+        Store<EntityStore> store,
+        String eventId
+    ) {
+        switch (eventId) {
+            case "close-clicked":
+                close(); // Close the page
+                break;
+            // Handle other events...
+        }
+    }
+    
+    /**
+     * Called when the page is dismissed/closed
+     */
+    @Override
+    public void onDismiss(Ref<EntityStore> playerEntity, Store<EntityStore> store) {
+        // Cleanup when page closes
+    }
+}
+```
+
+#### Opening a Custom Page
+
+```java
+// In your event handler or command
+Player player = event.getPlayer();
+
+// Get the player's page manager
+PageManager pageManager = player.getPageManager();
+
+// Create and open the page
+MyCustomPage page = new MyCustomPage(player.getPlayerRef());
+pageManager.openCustomPage(
+    player.getEntityRef(),
+    player.getWorld().getStore(),
+    page
+);
+```
+
+#### UICommandBuilder API
+
+```java
+// Element management
+ui.clear("elementId")                    // Clear element's children
+ui.remove("elementId")                   // Remove element
+ui.append("parentId", "childId")         // Add child to parent
+ui.insertBefore("existingId", "newId")   // Insert before element
+
+// Setting properties
+ui.set("elementId.text", "Hello")        // Set text
+ui.set("elementId.visible", true)        // Set visibility
+ui.set("elementId.enabled", false)       // Enable/disable
+ui.set("elementId.width", 200)           // Set width (pixels)
+ui.set("elementId.height", 100)          // Set height
+ui.set("elementId.x", 50)                // Set X position
+ui.set("elementId.y", 50)                // Set Y position
+ui.set("elementId.color", "#FF0000")     // Set color (hex)
+ui.set("elementId.image", "texture:ui/button") // Set image/texture
+
+// Arrays and lists
+ui.set("elementId.items", new String[] {"Item1", "Item2"})
+ui.set("elementId.data", Arrays.asList("A", "B", "C"))
+```
+
+### 2. Windows (Inventory-Style UI)
+
+**What**: Container-based UIs similar to inventory screens  
+**Use for**: Chests, furnaces, crafting tables, custom inventories
+
+```java
+package com.example.plugin.ui;
+
+import com.hypixel.hytale.server.core.entity.entities.player.windows.Window;
+import com.hypixel.hytale.protocol.packets.window.WindowType;
+import com.google.gson.JsonObject;
+
+public class MyCustomWindow extends Window {
+    
+    public MyCustomWindow() {
+        super(WindowType.CUSTOM); // Or other WindowType
+    }
+    
+    @Override
+    public JsonObject getData() {
+        JsonObject data = new JsonObject();
+        // Define window data (title, slots, etc.)
+        data.addProperty("title", "My Custom Window");
+        return data;
+    }
+    
+    @Override
+    protected boolean onOpen0() {
+        // Called when window opens
+        return true; // Return false to cancel opening
+    }
+    
+    @Override
+    protected void onClose0() {
+        // Called when window closes
+    }
+    
+    @Override
+    public void handleAction(
+        Ref<EntityStore> playerEntity,
+        Store<EntityStore> store,
+        WindowAction action
+    ) {
+        // Handle player actions (clicks, etc.)
+    }
+}
+```
+
+#### Opening a Window
+
+```java
+Player player = event.getPlayer();
+WindowManager windowManager = player.getWindowManager();
+
+MyCustomWindow window = new MyCustomWindow();
+windowManager.open(window);
+```
+
+### 3. Entity UI Components (Floating UI)
+
+**What**: UI elements attached to entities (health bars, nameplates, etc.)  
+**Use for**: Floating text, health displays, damage numbers, entity labels
+
+```java
+// Entity UI components are typically defined in assets
+// and attached to entities via components
+// Less common for plugin use - primarily for visual feedback
+
+// Example: Combat text (damage numbers)
+// These are usually triggered by game events and use predefined animations
+```
+
+### UI System Comparison
+
+| Feature | Custom Pages | Windows | Entity UI |
+|---------|-------------|---------|-----------|
+| **Layout** | Full custom layout | Container/grid based | Floating/3D space |
+| **Complexity** | High flexibility | Medium (inventory-style) | Low (visual only) |
+| **Use case** | Menus, shops, dialogs | Inventories, containers | Health bars, damage |
+| **Interaction** | Buttons, inputs, events | Click/drag items | Limited |
+| **Best for** | Custom game UIs | Storage interfaces | Visual feedback |
+
+### Complete Example: Shop UI
+
+```java
+package com.example.plugin.ui;
+
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.entity.entities.player.pages.CustomUIPage;
+import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
+import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
+
+public class ShopPage extends CustomUIPage {
+    private int selectedItem = -1;
+    
+    public ShopPage(PlayerRef playerRef) {
+        super(playerRef, CustomPageLifetime.PERSISTENT);
+    }
+    
+    @Override
+    public void build(
+        Ref<EntityStore> playerEntity,
+        UICommandBuilder ui,
+        UIEventBuilder events,
+        Store<EntityStore> store
+    ) {
+        // Clear and build UI
+        ui.clear("root");
+        ui.append("root", "shop-container");
+        
+        // Title
+        ui.append("shop-container", "title");
+        ui.set("title.text", "Village Shop");
+        ui.set("title.fontSize", 24);
+        
+        // Item list
+        ui.append("shop-container", "items-list");
+        String[] items = {"Sword - 100g", "Shield - 75g", "Potion - 25g"};
+        ui.set("items-list.items", items);
+        
+        // Buy button
+        ui.append("shop-container", "buy-button");
+        ui.set("buy-button.text", "Buy Item");
+        ui.set("buy-button.enabled", false); // Disabled until item selected
+        
+        // Close button
+        ui.append("shop-container", "close-button");
+        ui.set("close-button.text", "Close Shop");
+        
+        // Register events
+        events.registerEvent("items-list", "select", "item-selected");
+        events.registerEvent("buy-button", "click", "buy-clicked");
+        events.registerEvent("close-button", "click", "close-clicked");
+    }
+    
+    @Override
+    public void handleDataEvent(
+        Ref<EntityStore> playerEntity,
+        Store<EntityStore> store,
+        String eventId
+    ) {
+        switch (eventId) {
+            case "item-selected":
+                // Item was selected in list
+                selectedItem = 0; // Get actual index from event
+                
+                // Update UI to enable buy button
+                UICommandBuilder ui = new UICommandBuilder();
+                ui.set("buy-button.enabled", true);
+                sendUpdate(ui);
+                break;
+                
+            case "buy-clicked":
+                if (selectedItem >= 0) {
+                    // Process purchase
+                    processPurchase(playerEntity, selectedItem);
+                }
+                break;
+                
+            case "close-clicked":
+                close();
+                break;
+        }
+    }
+    
+    private void processPurchase(Ref<EntityStore> playerEntity, int itemIndex) {
+        // Handle purchase logic
+        // Deduct currency, give item, etc.
+    }
+}
+```
+
+### Opening the Shop
+
+```java
+// In your command or NPC interaction handler
+@Override
+public void execute(Player player, String[] args) {
+    ShopPage shop = new ShopPage(player.getPlayerRef());
+    player.getPageManager().openCustomPage(
+        player.getEntityRef(),
+        player.getWorld().getStore(),
+        shop
+    );
+}
+```
+
+### Best Practices
+
+1. **Keep UI updates small** - Only update what changed, don't rebuild entire UI
+2. **Use events properly** - Register all interactive elements with UIEventBuilder
+3. **Handle dismissal** - Always implement `onDismiss()` for cleanup
+4. **Validate input** - Check player actions in `handleDataEvent()`
+5. **Use appropriate lifetime** - PERSISTENT for menus, TEMPORARY for notifications
+6. **Cache UI state** - Store state in your page class, not in UI repeatedly
+7. **Test thoroughly** - UI bugs are hard to debug, test all interactions
+
+### UI Elements (Typical)
+
+While exact elements depend on Hytale's UI framework:
+- **Containers**: Layout panels, grids
+- **Text**: Labels, titles, descriptions
+- **Buttons**: Clickable elements
+- **Lists**: Scrollable item lists
+- **Images**: Icons, textures
+- **Input**: Text fields (if available)
+- **Sliders**: Value selection (if available)
+
+## Rendering Text in the World
+
+For text that appears in the 3D game world (not on UI pages):
+
+### 1. Nameplates (Entity Labels)
+
+**What**: Text that floats above entities (like player names)  
+**Use for**: NPC names, entity labels, status indicators
+
+#### Adding a Nameplate to an Entity
+
+```java
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.server.core.entity.nameplate.Nameplate;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+
+// Add nameplate component to an entity
+Ref<EntityStore> entityRef = ...; // Your entity reference
+ComponentAccessor<EntityStore> accessor = store.getComponentAccessor();
+
+// Create and add nameplate
+Nameplate nameplate = new Nameplate("Custom NPC Name");
+accessor.addComponent(entityRef, nameplate);
+
+// Update nameplate text later
+Nameplate existing = accessor.getComponent(entityRef, Nameplate.class);
+if (existing != null) {
+    existing.setText("Updated Name");
+    // Nameplate will sync to clients automatically
+}
+```
+
+#### Nameplate Features
+
+```java
+// Create nameplate
+Nameplate nameplate = new Nameplate();
+nameplate.setText("Shop Keeper");  // Set text
+String text = nameplate.getText(); // Get text
+
+// Nameplate automatically:
+// - Floats above entity
+// - Faces the player
+// - Updates when text changes (consumeNetworkOutdated())
+// - Syncs to all nearby clients
+```
+
+### 2. Combat Text (Floating Damage Numbers)
+
+**What**: Animated text that appears during combat (damage numbers, etc.)  
+**Use for**: Damage indicators, healing numbers, status messages
+
+#### Combat Text Component
+
+```java
+import com.hypixel.hytale.server.core.modules.entityui.asset.CombatTextUIComponent;
+
+// Combat text is typically defined in assets and triggered by events
+// Used for damage numbers, healing, etc.
+// Supports animations (scale, position, opacity)
+
+// Example: Display damage number above entity
+// (Exact API may vary - combat text is often asset-driven)
+```
+
+#### Combat Text Features
+
+- Animated (position, scale, opacity)
+- Automatically rises and fades
+- Multiple texts can stack
+- Color customizable
+- Used for damage/healing indicators
+
+### 3. Entity UI Components (Advanced)
+
+**What**: Custom UI elements attached to entities in 3D space  
+**Use for**: Health bars, custom indicators, interactive prompts
+
+#### Adding UI Components to Entities
+
+```java
+import com.hypixel.hytale.server.core.modules.entityui.UIComponentList;
+
+// Add UI component list to entity
+UIComponentList uiList = new UIComponentList();
+uiList.components = new String[] {
+    "my_custom_ui_component"  // Asset ID of your UI component
+};
+uiList.update(); // Updates internal IDs
+
+accessor.addComponent(entityRef, uiList);
+```
+
+#### Creating Custom Entity UI (Asset-Based)
+
+Entity UI components are typically defined in JSON assets:
+
+```json
+{
+  "type": "combat_text",
+  "id": "my_damage_indicator",
+  "hitbox_offset": [0, 2.0],
+  "animations": {
+    "appear": { "duration": 0.5, "type": "scale" },
+    "fade": { "duration": 1.0, "type": "opacity" }
+  }
+}
+```
+
+Then reference in code:
+```java
+EntityUIComponent.getAssetStore().get("my_damage_indicator");
+```
+
+### Comparison: World Text Options
+
+| Method | Type | Movement | Interactivity | Best For |
+|--------|------|----------|---------------|----------|
+| **Nameplate** | Simple text | Follows entity | None | Entity names, labels |
+| **Combat Text** | Animated text | Rises/fades | None | Damage, healing, feedback |
+| **Entity UI** | Complex UI | Attached to entity | Limited | Health bars, indicators |
+| **Custom Pages** | Full UI | Screen overlay | Full | Menus, dialogs |
+
+### Practical Examples
+
+#### Example 1: NPC with Custom Name
+
+```java
+public class CustomNPC {
+    
+    public void spawnNPC(World world, Vector3d position) {
+        // Create NPC entity
+        Ref<EntityStore> npc = world.spawnEntity("npc", position);
+        ComponentAccessor<EntityStore> accessor = world.getStore().getComponentAccessor();
+        
+        // Add nameplate
+        Nameplate nameplate = new Nameplate("§6[Quest] Village Elder");
+        accessor.addComponent(npc, nameplate);
+        
+        // NPC now has golden "[Quest] Village Elder" floating above
+    }
+    
+    public void updateNPCStatus(Ref<EntityStore> npc, ComponentAccessor<EntityStore> accessor, String status) {
+        Nameplate nameplate = accessor.getComponent(npc, Nameplate.class);
+        if (nameplate != null) {
+            nameplate.setText("§6[Quest] Village Elder\n§7" + status);
+            // Multi-line nameplate showing NPC name and status
+        }
+    }
+}
+```
+
+#### Example 2: Damage Display System
+
+```java
+public class DamageDisplaySystem extends DamageEventSystem {
+    
+    @Override
+    public void handle(
+        int entityIndex,
+        ArchetypeChunk<EntityStore> chunk,
+        Store<EntityStore> store,
+        CommandBuffer<EntityStore> buffer,
+        Damage damage
+    ) {
+        float amount = damage.getAmount();
+        
+        // Display damage as floating text
+        // This would typically use CombatTextUIComponent
+        // which shows animated damage numbers above the entity
+        
+        // The combat text system automatically:
+        // - Spawns text at hit location
+        // - Animates upward and fades
+        // - Color codes based on damage type
+        
+        // Exact implementation depends on Hytale's combat text API
+    }
+}
+```
+
+#### Example 3: Shop NPC with Interactive Nameplate
+
+```java
+public void createShopKeeper(World world, Vector3d position) {
+    // Spawn NPC
+    Ref<EntityStore> shopkeeper = world.spawnEntity("npc", position);
+    ComponentAccessor<EntityStore> accessor = world.getStore().getComponentAccessor();
+    
+    // Add nameplate with instructions
+    Nameplate nameplate = new Nameplate(
+        "§e§lShop Keeper\n" +
+        "§7Right-click to browse"
+    );
+    accessor.addComponent(shopkeeper, nameplate);
+    
+    // When player right-clicks NPC, open shop UI page
+    // (via interaction handler)
+}
+```
+
+### Notes on World Text
+
+1. **Nameplates are simplest** - Just text, follows entity, auto-faces player
+2. **Combat text is asset-driven** - Defined in JSON, triggered by events
+3. **Entity UI is advanced** - Full UI components in 3D space, complex setup
+4. **Color codes work** - Use `§` formatting (e.g., `§6` for gold, `§l` for bold)
+5. **Multi-line supported** - Use `\n` for line breaks in nameplates
+6. **Auto-syncing** - Changes sync to clients automatically
+7. **Performance** - Many nameplates can impact performance; use wisely
+
+### Common Use Cases
+
+**Use Nameplates for:**
+- NPC names and titles
+- Entity type labels
+- Status indicators ("Friendly", "Hostile")
+- Quest markers
+- Shop/service indicators
+
+**Use Combat Text for:**
+- Damage numbers
+- Healing numbers
+- XP gain notifications
+- Critical hit indicators
+- Status effect triggers
+
+**Use Entity UI for:**
+- Health/mana bars
+- Boss health displays
+- Casting bars
+- Buff/debuff indicators
+- Complex interactive elements
+
+**Use Custom Pages for:**
+- Full menus
+- Shops and trading
+- Quest dialogs
+- Inventory screens
+- Settings/configuration
