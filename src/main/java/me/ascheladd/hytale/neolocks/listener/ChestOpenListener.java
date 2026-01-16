@@ -57,15 +57,11 @@ public class ChestOpenListener extends EntityEventSystem<EntityStore, UseBlockEv
         
         Ref<EntityStore> entityRef = ev.getContext().getEntity();
         
-        // Check if this is a chest interaction
         if (!ChestUtil.isChest(blockType)) {
-            System.out.println("Not chest");
-            return; // Not a chest, ignore
+            return;
         }
         
-        // Only handle chest opening (Use interaction)
         if (ev.getInteractionType() != InteractionType.Use) {
-            System.out.println("Not use interaction");
             return;
         }
         
@@ -79,8 +75,7 @@ public class ChestOpenListener extends EntityEventSystem<EntityStore, UseBlockEv
         Player player = entityRef.getStore().getComponent(entityRef, Player.getComponentType());
         PlayerRef playerRef = entityRef.getStore().getComponent(entityRef, PlayerRef.getComponentType());
         if (player == null) {
-            System.out.println("Not a player interaction");
-            return; // Not a valid player interaction
+            return;
         }
         
         handleChestOpen(ev, playerRef, player, worldId, x, y, z);
