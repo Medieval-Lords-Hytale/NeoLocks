@@ -30,7 +30,7 @@ Group {
                 Background: (Color: #E62E7D32);
                 
                 Label {
-                    Text: "✓ Confirm Lock";
+                    Text: "[YES] Confirm Lock";
                     Style: (FontSize: 18, Alignment: Center);
                 }
             }
@@ -41,7 +41,7 @@ Group {
                 Background: (Color: #E6C62828);
                 
                 Label {
-                    Text: "✗ Cancel";
+                    Text: "[NO] Cancel";
                     Style: (FontSize: 18, Alignment: Center);
                 }
             }

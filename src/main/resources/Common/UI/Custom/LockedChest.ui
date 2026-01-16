@@ -8,7 +8,7 @@ Group {
         Background: (Color: #F22A2A2E);
 
         Label #Title {
-            Text: "🔒 Chest Locked!";
+            Text: "[LOCKED] Chest Locked!";
             Style: (FontSize: 26, Alignment: Center);
             Padding: (Bottom: 20);
         }
