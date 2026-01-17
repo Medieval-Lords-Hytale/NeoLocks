@@ -1,9 +1,0 @@
-{
-  "Interactions": [
-    {
-      "Type": "OpenCustomUI",
-      "PageKey": "NeoLocks_SignEdit",
-      "InteractionType": "Interact"
-    }
-  ]
-}

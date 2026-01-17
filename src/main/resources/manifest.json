@@ -1,8 +1,8 @@
 {
   "Group": "Ascheladd",
-  "Name": "NeoLocks",
+  "Name": "QuickSigns",
   "Version": "1.0.0",
-  "Description": "A chest protection plugin that allows players to lock their chests with signs",
+  "Description": "Quick sign text editing with floating holograms for Hytale",
   "Authors": [
     {
         "Name": "Ascheladd"
@@ -14,5 +14,5 @@
   "OptionalDependencies": {},
   "DisabledByDefault": false,
   "IncludesAssetPack": true,
-  "Main": "me.ascheladd.hytale.neolocks.NeoLocks"
+  "Main": "me.ascheladd.hytale.quicksigns.QuickSigns"
 }

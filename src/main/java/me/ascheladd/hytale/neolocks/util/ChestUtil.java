@@ -59,7 +59,7 @@ public class ChestUtil {
             int chunkZ = ChunkUtil.chunkCoordinate(z);
             long chunkIndex = ChunkUtil.indexChunk(chunkX, chunkZ);
             
-            // Get the chunk (should be loaded already since player is interacting with it)
+            // Get the chunk
             var chunk = world.getChunkIfLoaded(chunkIndex);
             if (chunk == null) {
                 return new ChestPosition[0];
