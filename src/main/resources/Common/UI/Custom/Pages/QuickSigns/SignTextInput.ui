@@ -1,4 +1,4 @@
-$C = "Common.ui";
+$C = "../../Common.ui";
 
 Group {
     LayoutMode: Center;
@@ -7,7 +7,7 @@ Group {
         LayoutMode: Top;
         Anchor: (Width: 500, Height: 380);
         Padding: (Full: 30);
-        Background: (Color: #DD1A1A1A);
+        Background: (Color: #1a4bdd1a);
 
         Label #Title {
             Text: "Sign Text";

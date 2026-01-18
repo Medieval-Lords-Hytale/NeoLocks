@@ -84,6 +84,14 @@ public class SignHologramStorage {
     }
     
     /**
+     * Checks if there is a tracked sign at the specified location.
+     */
+    public boolean hasSignAt(String worldId, int x, int y, int z) {
+        String key = makeLocationKey(worldId, x, y, z);
+        return signHolograms.containsKey(key);
+    }
+    
+    /**
      * Creates a location key for sign position.
      */
     private String makeLocationKey(String worldId, int x, int y, int z) {

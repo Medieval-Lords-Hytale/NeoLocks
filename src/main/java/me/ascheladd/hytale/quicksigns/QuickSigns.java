@@ -48,7 +48,7 @@ public final class QuickSigns extends JavaPlugin {
         Path dataFolder = this.getDataDirectory().toAbsolutePath();
         signHologramStorage = new SignHologramStorage(dataFolder, getLogger());
         
-        // Register sign interaction UI for editing signs with F button
+        // Register sign interaction UI for editing signs with F button (not working right now)
         @SuppressWarnings("null")
         @Nonnull var registry = this.getCodecRegistry(OpenCustomUIInteraction.PAGE_CODEC);
         registry.register("QuickSigns_SignEdit", SignTextInputSupplier.class, SignTextInputSupplier.CODEC);

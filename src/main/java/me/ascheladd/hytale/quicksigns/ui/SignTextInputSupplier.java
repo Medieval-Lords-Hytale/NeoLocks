@@ -41,12 +41,12 @@ public class SignTextInputSupplier implements OpenCustomUIInteraction.CustomPage
             return null;
         }
         
-        // Check if the block is an editable sign
+        // Check if the block is an editable sign (Also it's not lumberjack or construction sign)
         Store<EntityStore> store = ref.getStore();
         BlockType blockType = store.getExternalData().getWorld().getBlockType(blockPos.x, blockPos.y, blockPos.z);
         var item = blockType != null ? blockType.getItem() : null;
         if (!SignUtil.isEditableSign(item)) {
-            return null; // Not an editable sign type
+            return null;
         }
 
         // Get world info from the store

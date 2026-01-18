@@ -16,6 +16,7 @@ public class SignUtil {
      * Item ID for the construction sign (not editable).
      */
     private static final String CONSTRUCTION_SIGN_ID = "Furniture_Construction_Sign";
+    private static final String LUMBERJACK_SIGN_ID = "Furniture_Lumberjack_Sign";
     
     /**
      * Checks if an Item is an editable sign.
@@ -32,7 +33,11 @@ public class SignUtil {
         
         // Exclude construction sign
         String itemId = item.getId();
-        if (itemId != null && itemId.equals(CONSTRUCTION_SIGN_ID)) {
+        if (itemId == null) {
+            return false;
+        }
+
+        if (itemId.equals(CONSTRUCTION_SIGN_ID) || itemId.equals(LUMBERJACK_SIGN_ID)) {
             return false;
         }
         

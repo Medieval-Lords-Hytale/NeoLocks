@@ -30,7 +30,6 @@ import me.ascheladd.hytale.quicksigns.util.HologramUtil;
  */
 public class SignTextInputPage extends CustomUIPage {
     
-    private final String playerName;
     private final String worldId;
     private final int signX;
     private final double signY;
@@ -60,7 +59,6 @@ public class SignTextInputPage extends CustomUIPage {
         SignHologramStorage signHologramStorage
     ) {
         super(playerRef, CustomPageLifetime.CanDismiss);
-        this.playerName = playerName;
         this.worldId = worldId;
         this.signX = signX;
         this.signY = signY;
@@ -76,8 +74,8 @@ public class SignTextInputPage extends CustomUIPage {
         @Nonnull UIEventBuilder events,
         @Nonnull Store<EntityStore> store
     ) {
-        // Load the UI file
-        ui.append("SignTextInput.ui");
+        // Load the UI file (path relative to Common/UI/Custom/)
+        ui.append("Pages/QuickSigns/SignTextInput.ui");
         
         // Register button click events with captured text field values
         // Using @ prefix tells Hytale to capture the element's current value
@@ -104,7 +102,7 @@ public class SignTextInputPage extends CustomUIPage {
             return;
         }
         
-        // Simple JSON parsing (avoiding external dependencies)
+        // Simple JSON parsing
         String action = extractJsonValue(rawData, "ButtonAction");
         
         if ("confirm".equals(action)) {
@@ -128,23 +126,23 @@ public class SignTextInputPage extends CustomUIPage {
             }
             
             // Determine how many lines to create based on which lines have content
-            // If line 3 is empty, only create entities for lines 1 and 2
-            // If line 3 has content, create all 3 entities (even if line 2 is empty)
+            // Base on how what line is last
             List<String> displayLines = new ArrayList<>();
+            // 3 lines
             if (!lines[2].isEmpty()) {
-                // Line 3 has content, create all 3 entities
                 displayLines.add(lines[0]);
                 displayLines.add(lines[1]);
                 displayLines.add(lines[2]);
-            } else if (!lines[1].isEmpty() || !lines[0].isEmpty()) {
-                // Line 3 is empty, only create entities for lines 1 and 2
+            // 2  lines
+            } else if (!lines[1].isEmpty()) {
                 displayLines.add(lines[0]);
                 displayLines.add(lines[1]);
+            // 1 line
+            } else if (!lines[0].isEmpty()) {
+                displayLines.add(lines[0]);
             }
-            
-            // Default to player name if all fields empty
-            if (displayLines.isEmpty()) {
-                displayLines.add(playerName + "'s sign");
+            else {
+                return; // No lines entered
             }
                 
             // Get player position for offset calculation
