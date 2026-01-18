@@ -1,7 +1,7 @@
 {
   "Group": "Ascheladd",
   "Name": "QuickSigns",
-  "Version": "1.0.0",
+  "Version": "${revision}",
   "Description": "Quick sign text editing with floating holograms for Hytale",
   "Authors": [
     {

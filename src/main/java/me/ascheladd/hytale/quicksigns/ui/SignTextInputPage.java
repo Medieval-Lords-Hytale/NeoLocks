@@ -224,7 +224,41 @@ public class SignTextInputPage extends CustomUIPage {
         if (endIndex == -1) {
             return null;
         }
-        return json.substring(startIndex, endIndex);
+        String value = json.substring(startIndex, endIndex);
+        // Unescape Unicode sequences like \u0027
+        System.out.println("Value: " + value);
+        return unescapeUnicode(value);
+    }
+    
+    /**
+     * Unescapes Unicode escape sequences (\\uXXXX) in a string.
+     */
+    private String unescapeUnicode(String str) {
+        if (str == null || !str.contains("\\u")) {
+            return str;
+        }
+        
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+        while (i < str.length()) {
+            if (i < str.length() - 5 && str.charAt(i) == '\\' && str.charAt(i + 1) == 'u') {
+                // Extract the 4-digit hex code
+                String hex = str.substring(i + 2, i + 6);
+                try {
+                    int codePoint = Integer.parseInt(hex, 16);
+                    result.append((char) codePoint);
+                    i += 6;
+                } catch (NumberFormatException e) {
+                    // Not a valid unicode escape, just append as-is
+                    result.append(str.charAt(i));
+                    i++;
+                }
+            } else {
+                result.append(str.charAt(i));
+                i++;
+            }
+        }
+        return result.toString();
     }
     
     /**

@@ -68,6 +68,13 @@ public final class QuickSigns extends JavaPlugin {
     @Override
     protected void shutdown() {
         getLogger().atInfo().log("QuickSigns shutting down...");
+        
+        // Save and cleanup storage
+        if (signHologramStorage != null) {
+            signHologramStorage.shutdown();
+        }
+        
+        getLogger().atInfo().log("QuickSigns shutdown complete!");
     }
     
     /**
